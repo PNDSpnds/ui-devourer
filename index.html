@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#03060b" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23060d14'/%3E%3Crect x='4' y='11' width='24' height='10' fill='none' stroke='%2338f6ff' stroke-width='2'/%3E%3Crect x='7' y='14' width='14' height='4' fill='%234dffb8'/%3E%3C/svg%3E"
+    />
+    <title>UI 吞噬者 // v1.1</title>
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="game-canvas" aria-label="UI 吞噬者 3D 竞技场"></canvas>
+
+      <div id="damage-vignette" class="damage-vignette" aria-hidden="true"></div>
+
+      <div id="hud">
+        <section id="health-panel" class="hud-panel health-panel" aria-label="玩家血条">
+          <div class="health-topline">
+            <span class="health-tag">生命体征 // 已连接</span>
+            <span id="health-state" class="health-state">稳定</span>
+          </div>
+          <div id="health-readout" class="health-readout">生命：100 / 100</div>
+          <div class="health-track">
+            <div id="health-fill" class="health-fill"></div>
+            <div class="health-ticks" aria-hidden="true"></div>
+          </div>
+          <div id="shield-row" class="shield-row">
+            <span>护盾 // 超频</span>
+            <strong id="shield-value">0</strong>
+          </div>
+          <div class="health-footer">
+            <span>生命体征</span>
+            <span id="hud-sync">同步 100%</span>
+          </div>
+        </section>
+
+        <section id="score-panel" class="hud-panel score-panel" aria-label="分数与连击">
+          <div class="score-top">
+            <span>分数 // 连击</span>
+            <span id="score-wave" class="score-wave">第 1 循环 // 小关 1/5</span>
+          </div>
+          <div id="score-value" class="score-value">000000</div>
+          <div class="combo-row">
+            <span id="combo-value">连击 x0</span>
+            <span id="combo-mult">x1.0</span>
+          </div>
+          <div class="combo-track">
+            <div id="combo-fill" class="combo-fill"></div>
+          </div>
+          <div class="score-foot">
+            <span id="score-kills">0 击杀</span>
+            <span>战斗记录</span>
+          </div>
+        </section>
+
+        <button id="mute-button" class="mute-button" type="button" data-ui-interactive>
+          [ 声音：开 ]
+        </button>
+
+        <section id="skill-panel" class="hud-panel skill-panel" aria-label="技能栏">
+          <div class="skill-header">
+            <span>技能执行</span>
+            <span id="skill-state">就绪</span>
+          </div>
+          <div class="skill-list">
+            <div id="skill-dash" class="skill-slot">
+              <div class="skill-key">SPACE</div>
+              <div class="skill-name">冲刺</div>
+              <div id="dash-cd" class="skill-cd">就绪</div>
+              <div class="skill-bar"><i id="dash-progress"></i></div>
+            </div>
+            <div id="skill-nova" class="skill-slot">
+              <div class="skill-key">Q</div>
+              <div class="skill-name">震荡波</div>
+              <div id="nova-cd" class="skill-cd">就绪</div>
+              <div class="skill-bar"><i id="nova-progress"></i></div>
+            </div>
+          </div>
+          <div class="skill-footer">[F] 投掷/收回技能栏 ｜ [右键技能栏] 投掷</div>
+        </section>
+
+        <section id="boss-panel" class="boss-panel" aria-label="首领血条">
+          <div class="boss-top">
+            <span>异常体 // 吞噬者</span>
+            <span id="boss-hp">0 / 0</span>
+          </div>
+          <div id="boss-name" class="boss-name">吞噬者节点</div>
+          <div class="boss-track">
+            <div id="boss-fill" class="boss-fill"></div>
+          </div>
+        </section>
+
+        <div id="wave-banner" class="wave-banner">
+          <div id="wave-title" class="wave-title">第 1 循环 // 小关 1/5</div>
+          <div id="wave-sub" class="wave-sub">握手协议</div>
+        </div>
+
+        <div id="detached-badge" class="detached-badge">
+          <span class="detached-dot"></span>
+          <span id="detached-label">UI 实体 // 已脱落</span>
+        </div>
+
+        <div id="popup-layer" class="popup-layer"></div>
+        <div id="toast-layer" class="toast-layer"></div>
+
+        <div class="hint">
+          <span>[WASD] 移动</span>
+          <span>[左键] 攻击</span>
+          <span>[右键] 切换血条炮</span>
+          <span>[SPACE] 冲刺</span>
+          <span>[Q] 震荡波</span>
+          <span>[F] 投掷/收回技能栏</span>
+          <span>[E] 召回</span>
+          <span>[M] 静音</span>
+        </div>
+
+        <div id="crosshair" class="crosshair" aria-hidden="true"></div>
+        <div id="hp-weapon-readout" class="hp-weapon-readout">生命：100 / 100</div>
+      </div>
+
+      <div id="glitch-overlay" class="glitch-overlay" aria-hidden="true">
+        <div id="glitch-label" class="glitch-label">信号损坏</div>
+      </div>
+
+      <div id="upgrade-modal" class="modal">
+        <div class="modal-card upgrade-modal-card">
+          <div class="modal-kicker">关卡清场 // 三选一</div>
+          <h2 class="modal-title">写入强化协议</h2>
+          <p class="modal-sub">每个小关 / 首领关结束，选择一张卡写入本局。</p>
+          <div id="upgrade-options" class="upgrade-grid"></div>
+          <div class="modal-foot">按 <b>[1] [2] [3]</b> 或点击卡片</div>
+        </div>
+      </div>
+
+      <div id="result-modal" class="modal">
+        <div class="modal-card result-modal-card">
+          <div class="modal-kicker">运行终止</div>
+          <h2 id="result-title" class="modal-title">生命信号中断</h2>
+          <p id="result-sub" class="modal-sub"></p>
+          <div id="result-stats" class="result-stats"></div>
+          <button id="restart-button" class="action-button" type="button" data-ui-interactive>
+            再来一局
+          </button>
+        </div>
+      </div>
+
+      <div id="boot-overlay" class="boot-overlay">
+        <div class="boot-card">
+          <div class="boot-kicker">// v1.1 // 无限模式 // 血条武器</div>
+          <h1 class="boot-title">UI 吞噬者</h1>
+          <div class="boot-sub">UI 吞噬者 — 吞噬界面，夺取混沌</div>
+          <div class="boot-loader" aria-hidden="true"><span></span></div>
+          <div id="boot-status" class="boot-status">正在启动物理引擎...</div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

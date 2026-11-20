@@ -1,0 +1,24 @@
+{
+  "name": "ui-devourer",
+  "private": true,
+  "version": "1.1.0",
+  "description": "UI 吞噬者 v1.1 - 无限循环、血条武器、弹幕 Boss 与 35 张强化卡的物理 HUD 射击游戏。",
+  "type": "module",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@dimforge/rapier3d-compat": "0.21.0",
+    "three": "0.187.0"
+  },
+  "devDependencies": {
+    "@types/three": "0.187.0",
+    "typescript": "5.9.3",
+    "vite": "7.3.8"
+  }
+}
